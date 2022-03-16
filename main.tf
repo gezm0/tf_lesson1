@@ -30,17 +30,21 @@ output "aws_default_vpc_id" {
     description = "Default VPC id"
 }
 
-data "aws_subnet_ids" "default" {
-    vpc_id = data.aws_vpc.default.id
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
 }
 
 data "aws_subnet" "default" {
-    for_each = data.aws_subnet_ids.default.ids
+    for_each = toset(data.aws_subnets.default.ids)
     id       = each.value
 }
 
 output "subnet_cidr_blocks" {
     value = [for s in data.aws_subnet.default : s.cidr_block]
+    description = "My subnets"
 }
 
 data "aws_security_groups" "default" {
